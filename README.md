@@ -1,13 +1,45 @@
-# keychain-credential-use
+# 安全使用 macOS Passwords / Keychain 凭据
 
-Safely use one user-authorized credential stored in macOS Passwords or Keychain to sign in to a specified website or app; hand off device unlock, Touch ID, and ambiguous records to the user.
+这份 skill 定义一种受用户授权、按需使用单条密码记录的登录流程。它不保存真实密码、账号数据或验证码，也不提供密码导出工具。完整边界见 **SKILL.md**。
 
-## 用途与使用方式
+## 适用范围
 
-这是一个 Agent skill（Claude Code / Codex 通用格式），入口是 `SKILL.md`：
-agent 按其中的 `description` 判断何时触发，按正文流程执行。脚本、参数和数据口径以 `SKILL.md` 为准。
-人工使用时直接阅读 `SKILL.md`；带脚本的按其中给出的命令运行。
+仅当用户明确要求登录某个指定网站或应用时使用。每次操作都要核对目标站点和指定账号，只取本次登录所需的单条记录。
 
-## 目录
+不适用于批量导出凭据、发现账号、重置密码或自动通过 MFA。
 
-- `SKILL.md`
+## 安装
+
+本仓库没有运行时依赖或独立程序。将仓库作为 skill 安装到 agent 平台支持的 skills 目录，确保文件夹根部有 SKILL.md，然后刷新或重启 agent。使用 Skills CLI 时，按平台语法安装当前仓库：
+
+~~~bash
+npx skills add owner/repository-name
+~~~
+
+把示例 owner/repository-name 换成实际仓库位置。安装前检查平台提示的目标路径和仓库来源。不同 agent 对全局 skill 目录的约定可能不同。
+
+## 安全操作流程
+
+1. 确认用户授权的站点和账号；存在多个相似条目时，不能自行挑一个试。
+2. 打开系统 Passwords / Keychain 界面，定位并核对那条记录。
+3. 如果系统要求设备密码或 Touch ID，由用户亲自在系统界面解锁。不要索要、代输或绕过设备解锁。
+4. 只把密码填入已核对的目标页面；确保密码字段隐藏，不把值写入日志、文件、剪贴板历史或长期保存功能。
+5. 提交一次，并检查明确的登录状态。遇到 CAPTCHA、MFA 或设备授权时交给用户完成。
+6. 一次准确提交失败后清空字段并停止；不要自动切换另一条记录或连续试密码。
+
+## 凭据字段注意事项
+
+系统无障碍树可能把密码值与字段标签、占位符或辅助动作拼在一起。只能取已确认的 Password 字段值，并在明确的元数据边界截断。不能确定边界时停止自动读取，请用户手动输入。不要对密码直接执行通用 trim，因为密码本身可能以空格开头或结尾。
+
+## 人工接管条件
+
+系统解锁、Touch ID、验证码、多因素认证、多个无法区分的记录、账号身份不匹配、无法可靠确认密码字段或登录状态，都必须由用户处理。不得绕过这些交互。
+
+## 文件结构
+
+- **SKILL.md**：访问边界、字段读取、填写和登录步骤。
+- **README.md**：适用范围和安全操作摘要。
+
+## 许可证
+
+当前仓库未附 LICENSE 文件。公开可见不等于授予复制、修改或再分发许可。
